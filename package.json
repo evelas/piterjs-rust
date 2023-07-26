@@ -1,0 +1,40 @@
+{
+  "name": "piterjs-rust-examples",
+  "version": "0.0.6",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "piterjs-rust-examples",
+    "triples": {
+      "additional": [
+        "linux-x64-gnu"
+      ]
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@napi-rs/cli": "^2.16.2",
+    "ava": "^5.1.1"
+  },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "packageManager": "yarn@3.6.1",
+  "optionalDependencies": {
+    "piterjs-rust-examples-win32-x64-msvc": "0.0.6",
+    "piterjs-rust-examples-darwin-x64": "0.0.6",
+    "piterjs-rust-examples-linux-x64-gnu": "0.0.6"
+  }
+}
