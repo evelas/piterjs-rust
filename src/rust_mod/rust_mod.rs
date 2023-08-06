@@ -1,15 +1,14 @@
 use std::sync::{Arc, Mutex};
-
 use std::fs;
 use rayon::prelude::*;
 use csv::ReaderBuilder;
 use std::path::Path;
+pub type ProgressCallback = Box<dyn Fn(u64, u64, usize) -> () + Sync + Send>;
 
-pub type ProgressCallback = Box<dyn Fn(String, u64, u64, Option<String>) -> () + Sync + Send>;
 
 pub fn loading_files_with_progress(progress_callback: ProgressCallback) -> String {
 
-    let files: Vec<String> = vec![String::from("list1.csv"), String::from("list2.csv")]
+    let files: Vec<String> = vec![String::from("list4.csv"), String::from("list5.csv")]
         .into_iter()
         .map(|f| String::from(Path::new("./__test__/testdata").join(f).to_str().unwrap()))
         .collect();
@@ -18,15 +17,15 @@ pub fn loading_files_with_progress(progress_callback: ProgressCallback) -> Strin
     Vec::from_iter(0..files.len()).into_par_iter()
         .for_each(|i| {
             let file = &files[i];
-            let cb = |processed: u64, total: u64| {
+            let cb = |processed: u64, total: u64, file_iteration: usize| {
                 mutex_progress_callback
                 .lock()
                 .unwrap()(
-                    String::from("Loading"), 
                     processed, 
-                    total, 
-                    Some(format!("File #{}", i)),
+                    total,
+                    file_iteration,
                 );
+                
             };
             
             let mut rdr = ReaderBuilder::new()
@@ -36,11 +35,12 @@ pub fn loading_files_with_progress(progress_callback: ProgressCallback) -> Strin
         
             let total_file_sizes = fs::metadata(& file).unwrap().len();  
             let records = rdr.byte_records();
-         
+        
+            
             for result in records {
                 let row = result.unwrap();
                 let position = row.position().unwrap();
-                cb(position.byte(), total_file_sizes);
+                cb(position.byte(), total_file_sizes, i);
             }
            
         });
@@ -50,10 +50,10 @@ pub fn loading_files_with_progress(progress_callback: ProgressCallback) -> Strin
 
 #[cfg(test)]
 mod tests {
-    use crate::callback::loading_files_with_progress;
+    use crate::rust_mod::loading_files_with_progress;
 
-    fn progress_callback(stage: String, processed: u64, total: u64, label: Option<String>) {
-        println!("{}: {} / {} {}", stage, processed, total, label.unwrap_or("".to_string()));
+    fn progress_callback(processed: u64, total: u64, file_iteration: usize) {
+        println!("{} / {}. File# {}", processed, total, file_iteration);
     }
     #[test]
     fn test() {
